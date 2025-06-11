@@ -251,8 +251,8 @@ const zodiacSigns = {
 
 質問や提案がある場合は、以下の方法でご連絡ください：
 
-- GitHub Issues: [プロジェクトのIssuesページ]
-- Email: [連絡先メールアドレス]
+- GitHub Issues: [[プロジェクトのIssuesページ](https://github.com/Plemarins/Astrology/issues)]
+- Email: [Loie.floie1177@gmail.com]
 
 -----
 
