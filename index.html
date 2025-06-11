@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>占星術占いCLI</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #e0e6ed;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+```
+    /* 星空背景 */
+    .stars {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1;
+    }
+
+    .star {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        opacity: 0.8;
+        animation: twinkle 3s infinite alternate;
+    }
+
+    @keyframes twinkle {
+        0% { opacity: 0.3; }
+        100% { opacity: 1; }
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(0, 0, 0, 0.3);
+        border: 2px solid #4a90e2;
+        border-radius: 10px;
+        padding: 30px;
+        box-shadow: 0 0 30px rgba(74, 144, 226, 0.3);
+        backdrop-filter: blur(10px);
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #4a90e2;
+        padding-bottom: 20px;
+    }
+
+    .title {
+        font-size: 2.5em;
+        color: #ffd700;
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        margin: 0;
+        animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from { text-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        to { text-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+    }
+
+    .cli-interface {
+        background: rgba(0, 0, 0, 0.7);
+        border: 1px solid #4a90e2;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+        min-height: 300px;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .prompt {
+        color: #4a90e2;
+        margin: 10px 0;
+    }
+
+    .command {
+        color: #90ee90;
+    }
+
+    .result {
+        color: #ffd700;
+        margin: 15px 0;
+        padding: 10px;
+        background: rgba(255, 215, 0, 0.1);
+        border-left: 3px solid #ffd700;
+        border-radius: 5px;
+    }
+
+    .zodiac-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .zodiac-button {
+        background: linear-gradient(135deg, #2c3e50, #3498db);
+        border: 2px solid #4a90e2;
+        color: white;
+        padding: 15px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        font-family: inherit;
+        font-size: 12px;
+    }
+
+    .zodiac-button:hover {
+        background: linear-gradient(135deg, #3498db, #2c3e50);
+        box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .input-section {
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .birth-input {
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid #4a90e2;
+        color: white;
+        padding: 10px;
+        margin: 5px;
+        border-radius: 5px;
+        font-family: inherit;
+    }
+
+    .calculate-btn {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 16px;
+        margin: 10px;
+        transition: all 0.3s ease;
+    }
+
+    .calculate-btn:hover {
+        background: linear-gradient(135deg, #c0392b, #e74c3c);
+        box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .fortune-display {
+        background: rgba(255, 215, 0, 0.1);
+        border: 2px solid #ffd700;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+        min-height: 200px;
+        display: none;
+    }
+
+    .zodiac-symbol {
+        font-size: 2em;
+        margin-bottom: 10px;
+    }
+
+    .loading {
+        color: #4a90e2;
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+    }
+
+    .menu {
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .menu-item {
+        background: rgba(74, 144, 226, 0.2);
+        border: 1px solid #4a90e2;
+        color: white;
+        padding: 10px 20px;
+        margin: 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+
+    .menu-item:hover {
+        background: rgba(74, 144, 226, 0.4);
+        box-shadow: 0 0 10px rgba(74, 144, 226, 0.3);
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+```
+<div class="container">
+    <div class="header">
+        <h1 class="title">✨ 占星術占いCLI ✨</h1>
+        <p>あなたの運命を星座が教えてくれます</p>
+    </div>
+
+    <div class="cli-interface" id="cli">
+        <div class="prompt">astrology-cli@fortune:~$ システム初期化中...</div>
+        <div class="loading" id="loading">占星術データベース読み込み中...</div>
+    </div>
+
+    <div class="menu" id="menu" style="display: none;">
+        <div class="menu-item" onclick="showZodiacSelection()">1. 星座を選んで今日の運勢</div>
+        <div class="menu-item" onclick="showBirthCalculator()">2. 生年月日から星座判定</div>
+        <div class="menu-item" onclick="showCompatibility()">3. 相性診断</div>
+        <div class="menu-item" onclick="showDetailedFortune()">4. 詳細運勢</div>
+    </div>
+
+    <div id="content"></div>
+</div>
+
+<script>
+    // 星座データ
+    const zodiacSigns = {
+        'aries': { name: '牡羊座', symbol: '♈', dates: '3/21-4/19', element: '火' },
+        'taurus': { name: '牡牛座', symbol: '♉', dates: '4/20-5/20', element: '土' },
+        'gemini': { name: '双子座', symbol: '♊', dates: '5/21-6/21', element: '風' },
+        'cancer': { name: '蟹座', symbol: '♋', dates: '6/22-7/22', element: '水' },
+        'leo': { name: '獅子座', symbol: '♌', dates: '7/23-8/22', element: '火' },
+        'virgo': { name: '乙女座', symbol: '♍', dates: '8/23-9/22', element: '土' },
+        'libra': { name: '天秤座', symbol: '♎', dates: '9/23-10/23', element: '風' },
+        'scorpio': { name: '蠍座', symbol: '♏', dates: '10/24-11/22', element: '水' },
+        'sagittarius': { name: '射手座', symbol: '♐', dates: '11/23-12/21', element: '火' },
+        'capricorn': { name: '山羊座', symbol: '♑', dates: '12/22-1/19', element: '土' },
+        'aquarius': { name: '水瓶座', symbol: '♒', dates: '1/20-2/18', element: '風' },
+        'pisces': { name: '魚座', symbol: '♓', dates: '2/19-3/20', element: '水' }
+    };
+
+    // 運勢メッセージ
+    const fortuneMessages = {
+        love: [
+            '今日は素敵な出会いが期待できそうです',
+            '恋愛運は絶好調！積極的にアプローチを',
+            'パートナーとの絆が深まる日です',
+            '少し控えめに、相手のペースに合わせて',
+            '新しい恋の予感...アンテナを張って'
+        ],
+        work: [
+            '仕事運は上昇中！新しいプロジェクトに挑戦を',
+            '同僚との協力が成功の鍵となります',
+            '創造性を発揮できる絶好のタイミング',
+            '慎重に進めることで良い結果が得られます',
+            'リーダーシップを発揮する場面がありそう'
+        ],
+        health: [
+            '体調管理に気をつけて、十分な休息を',
+            '運動を始めるのに良い日です',
+            'ストレス発散を心がけて',
+            '栄養バランスの良い食事を意識して',
+            'リラックスタイムを大切にしましょう'
+        ],
+        money: [
+            '金運は安定しています。計画的な投資を',
+            '節約を心がけることで運気アップ',
+            '臨時収入の可能性があります',
+            '大きな出費は控えめに',
+            '貯蓄を始めるのに良いタイミング'
+        ]
+    };
+
+    // 星空生成
+    function createStars() {
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = Math.random() * 3 + 1 + 'px';
+            star.style.height = star.style.width;
+            star.style.animationDelay = Math.random() * 3 + 's';
+            starsContainer.appendChild(star);
+        }
+    }
+
+    // CLIメッセージ追加
+    function addCliMessage(message, className = '') {
+        const cli = document.getElementById('cli');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = className;
+        messageDiv.textContent = message;
+        cli.appendChild(messageDiv);
+        cli.scrollTop = cli.scrollHeight;
+    }
+
+    // システム初期化
+    function initializeSystem() {
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+            addCliMessage('astrology-cli@fortune:~$ システム初期化完了');
+            addCliMessage('占星術占いシステムへようこそ！', 'result');
+            addCliMessage('astrology-cli@fortune:~$ メニューを表示します...', 'prompt');
+            document.getElementById('menu').style.display = 'block';
+        }, 2000);
+    }
+
+    // 星座選択画面
+    function showZodiacSelection() {
+        const content = document.getElementById('content');
+        addCliMessage('astrology-cli@fortune:~$ show-zodiac-menu', 'command');
+        addCliMessage('星座を選択してください:', 'prompt');
+        
+        let html = '<div class="zodiac-grid">';
+        Object.keys(zodiacSigns).forEach(key => {
+            const sign = zodiacSigns[key];
+            html += `<div class="zodiac-button" onclick="showFortune('${key}')">
+                <div class="zodiac-symbol">${sign.symbol}</div>
+                <div>${sign.name}</div>
+                <div style="font-size: 10px;">${sign.dates}</div>
+            </div>`;
+        });
+        html += '</div>';
+        content.innerHTML = html;
+    }
+
+    // 運勢表示
+    function showFortune(zodiacKey) {
+        const sign = zodiacSigns[zodiacKey];
+        addCliMessage(`astrology-cli@fortune:~$ fortune --zodiac ${zodiacKey}`, 'command');
+        addCliMessage('運勢を計算中...', 'loading');
+        
+        setTimeout(() => {
+            const love = fortuneMessages.love[Math.floor(Math.random() * fortuneMessages.love.length)];
+            const work = fortuneMessages.work[Math.floor(Math.random() * fortuneMessages.work.length)];
+            const health = fortuneMessages.health[Math.floor(Math.random() * fortuneMessages.health.length)];
+            const money = fortuneMessages.money[Math.floor(Math.random() * fortuneMessages.money.length)];
+            
+            const lucky = Math.floor(Math.random() * 100) + 1;
+            const luckyColor = ['赤', '青', '黄', '緑', '紫', '橙', '白', '黒'][Math.floor(Math.random() * 8)];
+            const luckyNumber = Math.floor(Math.random() * 99) + 1;
+            
+            const result = `
+                <div class="fortune-display" style="display: block;">
+                    <h2>${sign.symbol} ${sign.name}の今日の運勢</h2>
+                    <p><strong>総合運:</strong> ${lucky}%</p>
+                    <p><strong>恋愛運:</strong> ${love}</p>
+                    <p><strong>仕事運:</strong> ${work}</p>
+                    <p><strong>健康運:</strong> ${health}</p>
+                    <p><strong>金運:</strong> ${money}</p>
+                    <p><strong>ラッキーカラー:</strong> ${luckyColor}</p>
+                    <p><strong>ラッキーナンバー:</strong> ${luckyNumber}</p>
+                    <p><strong>エレメント:</strong> ${sign.element}の星座</p>
+                </div>
+            `;
+            
+            document.getElementById('content').innerHTML = result;
+            addCliMessage('運勢表示完了！', 'result');
+        }, 1500);
+    }
+
+    // 生年月日計算機
+    function showBirthCalculator() {
+        addCliMessage('astrology-cli@fortune:~$ birth-calculator', 'command');
+        addCliMessage('生年月日から星座を判定します:', 'prompt');
+        
+        const html = `
+            <div class="input-section">
+                <h3>生年月日を入力してください</h3>
+                <input type="number" class="birth-input" id="birthMonth" placeholder="月 (1-12)" min="1" max="12">
+                <input type="number" class="birth-input" id="birthDay" placeholder="日 (1-31)" min="1" max="31">
+                <br>
+                <button class="calculate-btn" onclick="calculateZodiac()">星座を判定</button>
+            </div>
+        `;
+        document.getElementById('content').innerHTML = html;
+    }
+
+    // 星座計算
+    function calculateZodiac() {
+        const month = parseInt(document.getElementById('birthMonth').value);
+        const day = parseInt(document.getElementById('birthDay').value);
+        
+        if (!month || !day) {
+            addCliMessage('エラー: 月と日を正しく入力してください', 'result');
+            return;
+        }
+        
+        addCliMessage(`astrology-cli@fortune:~$ calculate --month ${month} --day ${day}`, 'command');
+        
+        let zodiacKey = '';
+        
+        if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) zodiacKey = 'aries';
+        else if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) zodiacKey = 'taurus';
+        else if ((month == 5 && day >= 21) || (month == 6 && day <= 21)) zodiacKey = 'gemini';
+        else if ((month == 6 && day >= 22) || (month == 7 && day <= 22)) zodiacKey = 'cancer';
+        else if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) zodiacKey = 'leo';
+        else if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) zodiacKey = 'virgo';
+        else if ((month == 9 && day >= 23) || (month == 10 && day <= 23)) zodiacKey = 'libra';
+        else if ((month == 10 && day >= 24) || (month == 11 && day <= 22)) zodiacKey = 'scorpio';
+        else if ((month == 11 && day >= 23) || (month == 12 && day <= 21)) zodiacKey = 'sagittarius';
+        else if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) zodiacKey = 'capricorn';
+        else if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) zodiacKey = 'aquarius';
+        else if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) zodiacKey = 'pisces';
+        
+        if (zodiacKey) {
+            const sign = zodiacSigns[zodiacKey];
+            addCliMessage(`あなたの星座は ${sign.symbol} ${sign.name} です！`, 'result');
+            setTimeout(() => showFortune(zodiacKey), 1000);
+        } else {
+            addCliMessage('エラー: 正しい日付を入力してください', 'result');
+        }
+    }
+
+    // 相性診断
+    function showCompatibility() {
+        addCliMessage('astrology-cli@fortune:~$ compatibility-check', 'command');
+        addCliMessage('相性診断を開始します:', 'prompt');
+        
+        let html = '<div style="text-align: center;"><h3>あなたの星座を選択:</h3><div class="zodiac-grid">';
+        Object.keys(zodiacSigns).forEach(key => {
+            const sign = zodiacSigns[key];
+            html += `<div class="zodiac-button" onclick="selectFirstZodiac('${key}')">
+                ${sign.symbol} ${sign.name}
+            </div>`;
+        });
+        html += '</div></div>';
+        document.getElementById('content').innerHTML = html;
+    }
+
+    let firstZodiac = '';
+
+    function selectFirstZodiac(zodiacKey) {
+        firstZodiac = zodiacKey;
+        const sign = zodiacSigns[zodiacKey];
+        addCliMessage(`第一選択: ${sign.symbol} ${sign.name}`, 'result');
+        
+        let html = '<div style="text-align: center;"><h3>相手の星座を選択:</h3><div class="zodiac-grid">';
+        Object.keys(zodiacSigns).forEach(key => {
+            const sign = zodiacSigns[key];
+            html += `<div class="zodiac-button" onclick="checkCompatibility('${key}')">
+                ${sign.symbol} ${sign.name}
+            </div>`;
+        });
+        html += '</div></div>';
+        document.getElementById('content').innerHTML = html;
+    }
+
+    function checkCompatibility(secondZodiac) {
+        const sign1 = zodiacSigns[firstZodiac];
+        const sign2 = zodiacSigns[secondZodiac];
+        
+        addCliMessage(`astrology-cli@fortune:~$ compatibility ${firstZodiac} ${secondZodiac}`, 'command');
+        addCliMessage('相性を計算中...', 'loading');
+        
+        setTimeout(() => {
+            const compatibility = Math.floor(Math.random() * 100) + 1;
+            let message = '';
+            
+            if (compatibility >= 80) message = '最高の相性！運命の相手かも';
+            else if (compatibility >= 60) message = 'とても良い相性です';
+            else if (compatibility >= 40) message = '普通の相性です';
+            else message = '少し工夫が必要な関係';
+            
+            const result = `
+                <div class="fortune-display" style="display: block;">
+                    <h2>相性診断結果</h2>
+                    <p>${sign1.symbol} ${sign1.name} × ${sign2.symbol} ${sign2.name}</p>
+                    <p><strong>相性度:</strong> ${compatibility}%</p>
+                    <p><strong>診断:</strong> ${message}</p>
+                    <p><strong>エレメント:</strong> ${sign1.element} × ${sign2.element}</p>
+                </div>
+            `;
+            
+            document.getElementById('content').innerHTML = result;
+            addCliMessage('相性診断完了！', 'result');
+        }, 2000);
+    }
+
+    // 詳細運勢
+    function showDetailedFortune() {
+        addCliMessage('astrology-cli@fortune:~$ detailed-fortune', 'command');
+        addCliMessage('詳細運勢モードを起動中...', 'loading');
+        
+        setTimeout(() => {
+            const html = `
+                <div style="text-align: center;">
+                    <h3>詳細運勢診断</h3>
+                    <p>より詳しい運勢を知りたい星座を選択してください</p>
+                    <div class="zodiac-grid">
+                        ${Object.keys(zodiacSigns).map(key => {
+                            const sign = zodiacSigns[key];
+                            return `<div class="zodiac-button" onclick="showDetailedFortuneResult('${key}')">
+                                ${sign.symbol} ${sign.name}
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = html;
+            addCliMessage('詳細運勢モード準備完了', 'result');
+        }, 1500);
+    }
+
+    function showDetailedFortuneResult(zodiacKey) {
+        const sign = zodiacSigns[zodiacKey];
+        addCliMessage(`astrology-cli@fortune:~$ detailed-analysis ${zodiacKey}`, 'command');
+        addCliMessage('詳細分析中...', 'loading');
+        
+        setTimeout(() => {
+            const today = new Date();
+            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            const todayStr = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${weekdays[today.getDay()]})`;
+            
+            const morningLuck = Math.floor(Math.random() * 100) + 1;
+            const afternoonLuck = Math.floor(Math.random() * 100) + 1;
+            const eveningLuck = Math.floor(Math.random() * 100) + 1;
+            
+            const result = `
+                <div class="fortune-display" style="display: block;">
+                    <h2>${sign.symbol} ${sign.name} 詳細運勢</h2>
+                    <p><strong>日付:</strong> ${todayStr}</p>
+                    <hr>
+                    <h3>時間帯別運勢</h3>
+                    <p><strong>午前 (6:00-12:00):</strong> ${morningLuck}%</p>
+                    <p><strong>午後 (12:00-18:00):</strong> ${afternoonLuck}%</p>
+                    <p><strong>夜間 (18:00-24:00):</strong> ${eveningLuck}%</p>
+                    <hr>
+                    <h3>今日のアドバイス</h3>
+                    <p>エレメント「${sign.element}」の力を活かして、直感を大切にしながら行動しましょう。</p>
+                    <p>特に ${morningLuck > afternoonLuck && morningLuck > eveningLuck ? '午前中' : 
+                         afternoonLuck > eveningLuck ? '午後' : '夜間'}が最も運気が高まる時間帯です。</p>
+                </div>
+            `;
+            
+            document.getElementById('content').innerHTML = result;
+            addCliMessage('詳細分析完了！', 'result');
+        }, 3000);
+    }
+
+    // 初期化
+    window.onload = function() {
+        createStars();
+        initializeSystem();
+    };
+</script>
+```
+
+</body>
+</html>
